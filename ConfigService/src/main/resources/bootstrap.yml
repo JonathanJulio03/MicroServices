@@ -7,11 +7,11 @@ sping:
       server:
         git:
           uri: https://github.com/JonathanJulio03/MicroServices.git
-          searchPath: ConfigData
+          searchPaths: ConfigData
           username: ${GIT_USER}
           password: ${GIT_PASSWORD}
   security:
     user:
       name: root
       password: s3cr3t
-      
+
