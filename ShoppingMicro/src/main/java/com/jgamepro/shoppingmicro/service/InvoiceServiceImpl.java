@@ -1,8 +1,12 @@
 package com.jgamepro.shoppingmicro.service;
 
 
+import com.jgamepro.shoppingmicro.client.CustomerClient;
+import com.jgamepro.shoppingmicro.client.ProductClient;
 import com.jgamepro.shoppingmicro.entity.Invoice;
 import com.jgamepro.shoppingmicro.entity.InvoiceItem;
+import com.jgamepro.shoppingmicro.model.Customer;
+import com.jgamepro.shoppingmicro.model.Product;
 import com.jgamepro.shoppingmicro.repository.InvoiceItemsRepository;
 import com.jgamepro.shoppingmicro.repository.InvoiceRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -22,6 +26,12 @@ public class InvoiceServiceImpl implements InvoiceService {
     @Autowired
     InvoiceItemsRepository invoiceItemsRepository;
 
+    @Autowired
+    CustomerClient customerClient;
+
+    @Autowired
+    ProductClient productClient;
+
     @Override
     public List<Invoice> findInvoiceAll() {
         return  invoiceRepository.findAll();
@@ -35,7 +45,12 @@ public class InvoiceServiceImpl implements InvoiceService {
             return  invoiceDB;
         }
         invoice.setState("CREATED");
-        return invoiceRepository.save(invoice);
+        invoiceDB = invoiceRepository.save(invoice);
+        invoiceDB.getItems().forEach( invoiceItem -> {
+            productClient.updateStockProduct(invoiceItem.getProductId(), invoiceItem.getQuantity() * -1);
+        });
+
+        return invoiceDB;
     }
 
 
@@ -66,6 +81,17 @@ public class InvoiceServiceImpl implements InvoiceService {
 
     @Override
     public Invoice getInvoice(Long id) {
-        return invoiceRepository.findById(id).orElse(null);
+        Invoice invoice= invoiceRepository.findById(id).orElse(null);
+        if (null != invoice ){
+            Customer customer = customerClient.getCustomer(invoice.getCustomerId()).getBody();
+            invoice.setCustomer(customer);
+            List<InvoiceItem> listItem=invoice.getItems().stream().map(invoiceItem -> {
+                Product product = productClient.getProduct(invoiceItem.getProductId()).getBody();
+                invoiceItem.setProduct(product);
+                return invoiceItem;
+            }).collect(Collectors.toList());
+            invoice.setItems(listItem);
+        }
+        return invoice ;
     }
 }
