@@ -1,7 +1,7 @@
 server:
-  port:8081
+  port: 8081
 
-sping:
+spring:
   cloud:
     config:
       server:
@@ -10,6 +10,7 @@ sping:
           searchPaths: ConfigData
           username: ${GIT_USER}
           password: ${GIT_PASSWORD}
+          default-label: "master"
   security:
     user:
       name: root
