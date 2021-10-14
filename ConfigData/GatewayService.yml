@@ -1,0 +1,27 @@
+server:
+  port: 8080
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:8099/eureka/
+
+spring:
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+      routes:
+        - id: CustomerMicro
+          uri: lb://CustomerMicro
+          predicates:
+            - Path=/customers/**
+        - id: ProductoMicro
+          uri: lb://ProductoMicro
+          predicates:
+            - Path=/products/**
+        - id: ShoppingMicro
+          uri: lb://ShoppingMicro
+          predicates:
+            - Path=/invoices/**
